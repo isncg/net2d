@@ -41,10 +41,10 @@ namespace element {
 }
 
 struct ELEMENT_TRANSFORM {
-	float x;
-	float y;
-	float scale;
-	float rotate;
+	float x=0;
+	float y=0;
+	float scale=1;
+	float rotate=0;
 };
 
 class Layer {

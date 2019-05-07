@@ -54,9 +54,9 @@ int main() {
 
 
 	LINE_MESSAGE testline;
-	testline.p0.x = 100;
-	testline.p0.y = -200;
-	testline.p1.x = 200;
+	testline.p0.x = 0;
+	testline.p0.y = 0;
+	testline.p1.x = 400;
 	testline.p1.y = 300;
 
 	SendNetLineMessage(hWnd, 0, testline);

@@ -94,10 +94,14 @@ View::View()
 
 void View::ResetTransform(ELEMENT_TRANSFORM * transform)
 {
+	RECT rc;
+	GetClientRect(hWnd, &rc);
 	pGraphics->ResetTransform();
-	pGraphics->ScaleTransform(transform->scale, transform->scale);
-	pGraphics->RotateTransform(transform->rotate);
+	pGraphics->TranslateTransform((rc.right - rc.left) / 2.0, (rc.bottom - rc.top) / 2.0);
 	pGraphics->TranslateTransform(transform->x, transform->y);
+	pGraphics->ScaleTransform(transform->scale, -transform->scale);
+	pGraphics->RotateTransform(transform->rotate);
+
 }
 
 void View::PaintLayer(Layer * layer)
@@ -199,13 +203,13 @@ BOOL Controller::OnNetMessage(UINT message, WPARAM wParam, LPARAM lParam)
 	return FALSE;
 }
 
+
+#include <iostream>
 BOOL Controller::OnViewTransform(UINT message, WPARAM wParam, LPARAM lParam)
 {
-	switch (message)
-	{
 
 
-	case WM_LBUTTONDOWN:
+	if (WM_LBUTTONDOWN == message) {
 		isDrag = true;
 		old_transform_x = model->transform.x;
 		old_transform_y = model->transform.y;
@@ -214,7 +218,8 @@ BOOL Controller::OnViewTransform(UINT message, WPARAM wParam, LPARAM lParam)
 
 		return TRUE;
 
-	case WM_LBUTTONUP:
+	}
+	else if (WM_LBUTTONUP == message) {
 		isDrag = false;
 
 		return TRUE;
@@ -222,7 +227,8 @@ BOOL Controller::OnViewTransform(UINT message, WPARAM wParam, LPARAM lParam)
 
 
 
-	case WM_MOUSEMOVE:
+	}
+	else if (WM_MOUSEMOVE == message) {
 
 		cur_mouse_x = LOWORD(lParam);
 		cur_mouse_y = HIWORD(lParam);
@@ -236,10 +242,50 @@ BOOL Controller::OnViewTransform(UINT message, WPARAM wParam, LPARAM lParam)
 
 		return TRUE;
 
-	default:
-		break;
-
 	}
+	else if (WM_CHAR == message) {
+
+		auto old_scale = model->transform.scale;
+		auto new_scale = 1.0f;
+
+		if (wParam == '=') {
+			new_scale = old_scale * 1.2;
+		}
+		else if (wParam == '-') {
+			new_scale = old_scale / 1.2;
+		}
+
+		if (new_scale < 0.01) {
+			new_scale = 0.01;
+		}
+		if (new_scale > 100) {
+			new_scale = 100;
+		}
+
+
+
+		RECT rc;
+		GetClientRect(hWnd, &rc);
+		float cx = model->transform.x;
+		float cy = model->transform.y;
+		float zoom_rate = new_scale / old_scale;
+		float shift_x = (zoom_rate - 1) * cx;
+		float shift_y = (zoom_rate - 1) * cy;
+		/*std::cout << "C    _XY " << cx << " " << cy << std::endl;
+		std::cout << "SHIFT_XY " << shift_x << " " << shift_y << std::endl;*/
+		model->transform.x += shift_x;
+		model->transform.y += shift_y;
+
+		model->transform.scale = new_scale;
+
+		if (wParam == '=' || wParam == '-')
+		{
+			InvalidateRect(hWnd, NULL, TRUE);
+			return TRUE;
+		}
+		return FALSE;
+	}
+
 	return FALSE;
 }
 
