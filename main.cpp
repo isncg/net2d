@@ -1,6 +1,7 @@
 #include "net.h"
 #include "message.h"
 #include "graphics.h"
+#include "Database.h"
 
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 HWND hWnd;
@@ -22,7 +23,8 @@ HBITMAP backbuffer = NULL;
 
 
 int main() {
-
+	Database db("data");
+	db.GetData();
 	Gdiplus::GdiplusStartupInput gdiplusStartupInput;
 	ULONG_PTR           gdiplusToken;
 	Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
