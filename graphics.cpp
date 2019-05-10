@@ -167,18 +167,29 @@ void AxisView::DrawBackground(Model * model)
 	pGraphics->DrawLine(&pen, 0.0f, cy, (float)rc.right, cy);
 	pGraphics->DrawLine(&pen, cx, 0.0f, cx, (float)rc.bottom);
 
-	float vx = fmod(cx, 100.0);
+	auto step = 100.0*model->transform.scale;
+	while (abs(step / 10.0 - 100.0) < abs(step - 100.0))
+	{
+		step /= 10;
+	}
+
+	while (abs(step*10.0 - 100.0) < abs(step - 100.0))
+	{
+		step *= 10;
+	}
+
+	float vx = fmod(cx, step);
 	while (vx < rc.right)
 	{
 		pGraphics->DrawLine(&pen, vx, cy - 5, vx, cy + 5);
-		vx += 100.0f;
+		vx += step;
 	}
 
-	float vy = fmod(cy, 100.0);
+	float vy = fmod(cy, step);
 	while (vy < rc.bottom)
 	{
 		pGraphics->DrawLine(&pen, cx - 5, vy, cx + 5, vy);
-		vy += 100.0;
+		vy += step;
 	}
 
 	if (cx <= 0 || cx >= rc.right || cy <= 0 || cy >= rc.bottom) {
