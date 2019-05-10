@@ -74,6 +74,14 @@ void View::Init(HDC hdc)
 	external_graphics = false;
 }
 
+void View::Cleanup()
+{
+	if (!external_graphics) {
+		delete pGraphics;
+	}
+	pGraphics = NULL;
+}
+
 View::View(Gdiplus::Graphics * pGraphics)
 {
 	this->pGraphics = pGraphics;
@@ -143,18 +151,61 @@ void View::DrawForeground(Model * model)
 
 View::~View()
 {
-	if (!external_graphics) {
-		delete pGraphics;
-	}
-	pGraphics = NULL;
+	Cleanup();
 }
 
 void AxisView::DrawBackground(Model * model)
 {
-	ResetTransform(&model->transform);
+	//ResetTransform(&model->transform);
 	Gdiplus::Pen pen(Gdiplus::Color(128, 128, 128));
-	pGraphics->DrawLine(&pen, -100, 0, 100, 0);
-	pGraphics->DrawLine(&pen, 0, -100, 0, 100);
+	Gdiplus::SolidBrush brush(Gdiplus::Color(0, 0, 0));
+	RECT rc;
+	GetClientRect(hWnd, &rc);
+	pGraphics->ResetTransform();
+	float cx = model->transform.x + rc.right / 2.0f;
+	float cy = model->transform.y + rc.bottom / 2.0f;
+	pGraphics->DrawLine(&pen, 0.0f, cy, (float)rc.right, cy);
+	pGraphics->DrawLine(&pen, cx, 0.0f, cx, (float)rc.bottom);
+
+	float vx = fmod(cx, 100.0);
+	while (vx < rc.right)
+	{
+		pGraphics->DrawLine(&pen, vx, cy - 5, vx, cy + 5);
+		vx += 100.0f;
+	}
+
+	float vy = fmod(cy, 100.0);
+	while (vy < rc.bottom)
+	{
+		pGraphics->DrawLine(&pen, cx - 5, vy, cx + 5, vy);
+		vy += 100.0;
+	}
+
+	if (cx <= 0 || cx >= rc.right || cy <= 0 || cy >= rc.bottom) {
+
+		if (cx < 0) {
+			cx = 0;
+		}
+		else if (cx > rc.right) {
+			cx = rc.right;
+		}
+		if (cy < 0) {
+			cy = 0;
+		}
+		else if (cy > rc.bottom) {
+			cy = rc.bottom;
+		}
+
+		Gdiplus::PointF points[]{
+			Gdiplus::PointF(cx, cy + 10),
+			Gdiplus::PointF(cx + 10, cy),
+			Gdiplus::PointF(cx, cy - 10),
+			Gdiplus::PointF(cx - 10, cy),
+		};
+		pGraphics->FillPolygon(&brush, points, 4);
+	}
+
+
 }
 
 
@@ -184,7 +235,6 @@ BOOL Controller::OnNetMessage(UINT message, WPARAM wParam, LPARAM lParam)
 	}
 
 	else if (message == NM_POINT_LIST) {
-		puts("POINT_LIST");
 		std::list<POINT_MESSAGE>* pm = (std::list<POINT_MESSAGE>*)lParam;
 		for (auto i = pm->begin(); i != pm->end(); i++) {
 			layers[layer_index]->elements.push_back(new  NetPoint(i->x, i->y, i->size, 0));
@@ -213,11 +263,9 @@ BOOL Controller::OnNetMessage(UINT message, WPARAM wParam, LPARAM lParam)
 }
 
 
-#include <iostream>
+//#include <iostream>
 BOOL Controller::OnViewTransform(UINT message, WPARAM wParam, LPARAM lParam)
 {
-
-
 	if (WM_LBUTTONDOWN == message) {
 		isDrag = true;
 		old_transform_x = model->transform.x;
@@ -253,9 +301,6 @@ BOOL Controller::OnViewTransform(UINT message, WPARAM wParam, LPARAM lParam)
 
 	}
 	else if (WM_CHAR == message) {
-		puts("WM_CHAR: ");
-		putc(wParam, stdout);
-		putc('\n', stdout);
 		auto old_scale = model->transform.scale;
 		auto new_scale = 1.0f;
 

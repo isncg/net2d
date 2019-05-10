@@ -27,7 +27,14 @@ int main() {
 	RegisterNetMessage();
 
 
-	Database db("data");
+	Database db("data.sqlite");
+	db.PutData(0, 10, 10, 0, 0, 0);
+	db.PutData(0, 20, 10, 0, 0, 1);
+	db.PutData(0, 30, 20, 0, 0, 2);
+	db.PutData(0, 40, 40, 0, 0, 3);
+	db.PutData(0, 50, 60, 0, 0, 4);
+
+
 	std::list <POINT_MESSAGE> saved;
 	db.GetData(saved);
 	
@@ -87,7 +94,6 @@ int main() {
 		DispatchMessage(&msg);
 	}*/
 
-
 	MSG msg = { 0 };
 	while (WM_QUIT != msg.message)
 	{
@@ -104,7 +110,7 @@ int main() {
 				backdc = CreateCompatibleDC(hdc);
 				if (backbuffer)
 					DeleteObject(backbuffer);
-				backbuffer = CreateCompatibleBitmap(backdc, 4096, 4096);
+				backbuffer = CreateCompatibleBitmap(hdc, 4096, 4096);
 				SelectObject(backdc, backbuffer);
 			}
 
@@ -116,15 +122,18 @@ int main() {
 				FillRect(backdc, &rc, (HBRUSH)GetStockObject(WHITE_BRUSH));
 
 				view->Init(backdc);
+			
 				view->DrawBackground(model);
 				view->PaintModel(model);
 				view->DrawForeground(model);
-
-
+				view->Cleanup();
 
 				auto width = rc.right - rc.left;
 				auto height = rc.bottom - rc.top;
 
+			/*	Gdiplus::Graphics graphics(backdc);
+				Gdiplus::Pen pen(Gdiplus::Color(255, 0, 0, 255));
+				graphics.DrawLine(&pen, 0, 0, 200, 300);*/
 				BitBlt(hdc, 0, 0, width, height, backdc, 0, 0, SRCCOPY);
 
 			}

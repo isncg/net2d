@@ -20,7 +20,10 @@ struct POINT_MESSAGE {
 	float x;
 	float y;
 	float size = 1;
-	UINT color = 0;
+	UINT frame_id;
+	UINT frame_index;
+	UINT type = 0;
+	UINT time_stamp;
 };
 
 

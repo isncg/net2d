@@ -101,6 +101,7 @@ protected:
 public:
 
 	void Init(HDC hdc);
+	void Cleanup();
 
 	View(Gdiplus::Graphics* pGraphics);
 	View(HDC hdc);

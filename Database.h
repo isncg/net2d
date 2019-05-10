@@ -12,5 +12,6 @@ public:
 
 	void GetData(std::vector<POINT_MESSAGE>& result_buffer);
 	void GetData(std::list<POINT_MESSAGE>& result_list);
+	void PutData(UINT point_type, float x, float y, UINT time_stamp, UINT frame_id, UINT frame_index);
 };
 
