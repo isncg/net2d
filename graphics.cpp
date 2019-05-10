@@ -4,29 +4,29 @@
 
 extern HWND hWnd;
 
-void  Point::Draw(Gdiplus::Graphics * pGraphics, Gdiplus::Pen * pen)
+void  NetPoint::Draw(Gdiplus::Graphics * pGraphics, Gdiplus::Pen * pen)
 {
 	pGraphics->DrawEllipse(pen, Gdiplus::RectF(this->x - this->size / 2, this->y - this->size / 2, this->size, this->size));
 }
 
-Point::Point(float x, float y, float size, DWORD id) :
+NetPoint::NetPoint(float x, float y, float size, DWORD id) :
 	x(x), y(y), size(size), id(id)
 {}
 
-Point::Point() :
+NetPoint::NetPoint() :
 	x(0), y(0), size(0), id(0)
 {}
 
-void  Line::Draw(Gdiplus::Graphics * pGraphics, Gdiplus::Pen * pen)
+void  NetLine::Draw(Gdiplus::Graphics * pGraphics, Gdiplus::Pen * pen)
 {
 	pGraphics->DrawLine(pen, Gdiplus::PointF(this->start.x, this->start.y), Gdiplus::PointF(this->end.x, this->end.y));
 }
 
-Line::Line()
+NetLine::NetLine()
 {
 }
 
-void  LineStrip::Draw(Gdiplus::Graphics * pGraphics, Gdiplus::Pen * pen)
+void  NetLineStrip::Draw(Gdiplus::Graphics * pGraphics, Gdiplus::Pen * pen)
 {
 	static std::vector<Gdiplus::PointF> buffer;
 	buffer.resize(this->points.size());
@@ -44,7 +44,7 @@ void  LineStrip::Draw(Gdiplus::Graphics * pGraphics, Gdiplus::Pen * pen)
 //	matrix.IsIdentity()
 //}
 
-Gdiplus::Pen *  IDrawable::GetDefaultPen()
+Gdiplus::Pen *  INetDrawable::GetDefaultPen()
 {
 	static Gdiplus::Pen * default_pen = NULL;
 	if (!default_pen) {
@@ -53,7 +53,7 @@ Gdiplus::Pen *  IDrawable::GetDefaultPen()
 	return default_pen;
 }
 
-void  IDrawable::Draw(Gdiplus::Graphics * pGraphics)
+void  INetDrawable::Draw(Gdiplus::Graphics * pGraphics)
 {
 	auto pen = this->pen;
 	if (!pen) {
@@ -177,7 +177,7 @@ BOOL Controller::OnNetMessage(UINT message, WPARAM wParam, LPARAM lParam)
 	if (message == NM_POINT)
 	{
 		POINT_MESSAGE* pm = (POINT_MESSAGE*)lParam;
-		layers[layer_index]->elements.push_back(new  Point(pm->x, pm->y, pm->size, 0));
+		layers[layer_index]->elements.push_back(new  NetPoint(pm->x, pm->y, pm->size, 0));
 
 		delete pm;
 		return TRUE;
@@ -187,7 +187,7 @@ BOOL Controller::OnNetMessage(UINT message, WPARAM wParam, LPARAM lParam)
 		puts("POINT_LIST");
 		std::list<POINT_MESSAGE>* pm = (std::list<POINT_MESSAGE>*)lParam;
 		for (auto i = pm->begin(); i != pm->end(); i++) {
-			layers[layer_index]->elements.push_back(new  Point(i->x, i->y, i->size, 0));
+			layers[layer_index]->elements.push_back(new  NetPoint(i->x, i->y, i->size, 0));
 		}
 		delete pm;
 		return TRUE;
@@ -195,9 +195,9 @@ BOOL Controller::OnNetMessage(UINT message, WPARAM wParam, LPARAM lParam)
 
 	else if (message == NM_LINE) {
 		LINE_MESSAGE* lm = (LINE_MESSAGE*)lParam;
-		auto line = new  Line();
-		line->start = Point(lm->p0.x, lm->p0.y, lm->p0.size, 0);
-		line->end = Point(lm->p1.x, lm->p1.y, lm->p1.size, 0);
+		auto line = new  NetLine();
+		line->start = NetPoint(lm->p0.x, lm->p0.y, lm->p0.size, 0);
+		line->end = NetPoint(lm->p1.x, lm->p1.y, lm->p1.size, 0);
 
 		layers[layer_index]->elements.push_back(line);
 		//layer_stack->layers[layer_index]->line_buffer.push_back(lm);
