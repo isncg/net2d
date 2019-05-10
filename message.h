@@ -3,15 +3,18 @@
 
 #include<Windows.h>
 #include<vector>
-
+#include<list>
 
 #define NM_CLEAR GET_NM_CLEAR()
 #define NM_POINT GET_NM_POINT()
+#define NM_POINT_LIST GET_NM_POINT_LIST()
 #define NM_LINE GET_NM_LINE()
 
 UINT GET_NM_CLEAR();
 UINT GET_NM_POINT();
+UINT GET_NM_POINT_LIST();
 UINT GET_NM_LINE();
+
 
 struct POINT_MESSAGE {
 	float x;
@@ -39,6 +42,8 @@ struct LINE_MESSAGE {
 HRESULT SendNetPointMessage(HWND hWnd, UINT layer, POINT_MESSAGE& msgdata);
 
 HRESULT SendNetLineMessage(HWND hWnd, UINT layer, LINE_MESSAGE& msgdata);
+
+HRESULT SendNetPointListMessage(HWND hWnd, UINT layer, std::list<POINT_MESSAGE> & point_list);
 
 HRESULT SendNetClearMessage(HWND hWnd, UINT layer);
 

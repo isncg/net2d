@@ -3,54 +3,54 @@
 #include<gdiplus.h>
 #include<vector>
 
-namespace element {
 
-	class IDrawable {
-	protected:
-		Gdiplus::Pen* GetDefaultPen();
-	public:
-		Gdiplus::Pen* pen = NULL;
-		virtual void Draw(Gdiplus::Graphics* pGraphics, Gdiplus::Pen* pen) = 0;
-		void Draw(Gdiplus::Graphics* pGraphics);
-	};
 
-	class Point : public IDrawable {
-		virtual void Draw(Gdiplus::Graphics* pGraphics, Gdiplus::Pen* pen) override;
-	public:
-		float x;
-		float y;
-		float size;
-		DWORD id;
-		Point(float x, float y, float size, DWORD id);
-		Point();
-	};
+class INetDrawable {
+protected:
+	Gdiplus::Pen* GetDefaultPen();
+public:
+	Gdiplus::Pen* pen = NULL;
+	virtual void Draw(Gdiplus::Graphics* pGraphics, Gdiplus::Pen* pen) = 0;
+	void Draw(Gdiplus::Graphics* pGraphics);
+};
 
-	class Line : public IDrawable {
-		virtual void Draw(Gdiplus::Graphics* pGraphics, Gdiplus::Pen* pen) override;
-	public:
-		Point start;
-		Point end;
-		Line();
-	};
+class NetPoint : public INetDrawable {
+	virtual void Draw(Gdiplus::Graphics* pGraphics, Gdiplus::Pen* pen) override;
+public:
+	float x;
+	float y;
+	float size;
+	DWORD id;
+	NetPoint(float x, float y, float size, DWORD id);
+	NetPoint();
+};
 
-	class LineStrip : public IDrawable {
-		virtual void Draw(Gdiplus::Graphics* pGraphics, Gdiplus::Pen* pen) override;
-	public:
-		std::vector<Point> points;
-	};
-}
+class NetLine : public INetDrawable {
+	virtual void Draw(Gdiplus::Graphics* pGraphics, Gdiplus::Pen* pen) override;
+public:
+	NetPoint start;
+	NetPoint end;
+	NetLine();
+};
+
+class NetLineStrip : public INetDrawable {
+	virtual void Draw(Gdiplus::Graphics* pGraphics, Gdiplus::Pen* pen) override;
+public:
+	std::vector<NetPoint> points;
+};
+
 
 struct ELEMENT_TRANSFORM {
-	float x=0;
-	float y=0;
-	float scale=1;
-	float rotate=0;
+	float x = 0;
+	float y = 0;
+	float scale = 1;
+	float rotate = 0;
 };
 
 class Layer {
 public:
 	ELEMENT_TRANSFORM transform;
-	std::vector<element::IDrawable*> elements;
+	std::vector<INetDrawable*> elements;
 
 	//void GetMatrix(Gdiplus::Matrix& matrix);
 
@@ -95,6 +95,7 @@ public:
 
 class View {
 	bool external_graphics = false;
+
 protected:
 	Gdiplus::Graphics* pGraphics;
 public:

@@ -6,7 +6,7 @@ UINT _NM_CLEAR = 0;
 
 UINT _NM_POINT = 0;
 UINT _NM_LINE = 0;
-
+UINT _NM_POINT_LIST = 0;
 //void PostNetMessage(HWND hWnd, UINT layer, UINT type, void* msgdata) {
 //	PostMessage(hWnd, type, layer, (LPARAM)msgdata);
 //}
@@ -19,6 +19,11 @@ UINT GET_NM_CLEAR()
 UINT GET_NM_POINT()
 {
 	return _NM_POINT;
+}
+
+UINT GET_NM_POINT_LIST()
+{
+	return _NM_POINT_LIST;
 }
 
 UINT GET_NM_LINE()
@@ -37,6 +42,13 @@ HRESULT SendNetLineMessage(HWND hWnd, UINT layer, LINE_MESSAGE & msgdata) {
 	auto m = new LINE_MESSAGE;
 	*m = msgdata;
 	return SendMessage(hWnd, _NM_LINE, layer, (LPARAM)m);
+}
+
+HRESULT SendNetPointListMessage(HWND hWnd, UINT layer, std::list<POINT_MESSAGE>& point_list)
+{
+	auto m = new std::list<POINT_MESSAGE>;
+	m->assign(point_list.begin(), point_list.end());
+	return SendMessage(hWnd, _NM_POINT_LIST, layer, (LPARAM)m);
 }
 
 HRESULT SendNetClearMessage(HWND hWnd, UINT layer)
@@ -93,4 +105,5 @@ void RegisterNetMessage()
 	_NM_POINT = RegisterWindowMessage("NM_POINT");
 	_NM_LINE = RegisterWindowMessage("NM_LINE");
 	_NM_CLEAR = RegisterWindowMessage("NM_CLEAR");
+	_NM_POINT_LIST = RegisterWindowMessage("NM_POINT_LIST");
 }

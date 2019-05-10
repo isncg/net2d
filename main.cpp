@@ -2,6 +2,7 @@
 #include "message.h"
 #include "graphics.h"
 #include "Database.h"
+#include<chrono>
 
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 HWND hWnd;
@@ -23,15 +24,24 @@ HBITMAP backbuffer = NULL;
 
 
 int main() {
+	RegisterNetMessage();
+
+
 	Database db("data");
-	db.GetData();
+	std::list <POINT_MESSAGE> saved;
+	db.GetData(saved);
+	
+	for (auto i = saved.begin(); i != saved.end(); i++) {
+		printf("SAVED: x=%f y=%f\n", i->x, i->y, i->size=10);
+	}
+
+
 	Gdiplus::GdiplusStartupInput gdiplusStartupInput;
 	ULONG_PTR           gdiplusToken;
 	Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 
 	NetThread udp(RunUDP);
 
-	RegisterNetMessage();
 
 	model = new Model();
 	view = new AxisView();
@@ -67,7 +77,7 @@ int main() {
 	testline.p1.y = 300;
 
 	SendNetLineMessage(hWnd, 0, testline);
-
+	SendNetPointListMessage(hWnd, 0, saved);
 	/*MSG msg = { 0 };
 
 
@@ -77,9 +87,11 @@ int main() {
 		DispatchMessage(&msg);
 	}*/
 
+
 	MSG msg = { 0 };
 	while (WM_QUIT != msg.message)
 	{
+		auto enter_time = std::chrono::high_resolution_clock::now();
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		{
 			TranslateMessage(&msg);
@@ -87,6 +99,16 @@ int main() {
 		}
 		else
 		{
+			HDC hdc = GetDC(hWnd);
+			if (!backdc) {
+				backdc = CreateCompatibleDC(hdc);
+				if (backbuffer)
+					DeleteObject(backbuffer);
+				backbuffer = CreateCompatibleBitmap(backdc, 4096, 4096);
+				SelectObject(backdc, backbuffer);
+			}
+
+
 			if (backdc) {
 
 				RECT rc;
@@ -97,8 +119,28 @@ int main() {
 				view->DrawBackground(model);
 				view->PaintModel(model);
 				view->DrawForeground(model);
+
+
+
+				auto width = rc.right - rc.left;
+				auto height = rc.bottom - rc.top;
+
+				BitBlt(hdc, 0, 0, width, height, backdc, 0, 0, SRCCOPY);
+
 			}
+			ReleaseDC(hWnd, hdc);
+			auto exit_time = std::chrono::high_resolution_clock::now();
+			auto delta_time = exit_time - enter_time;
+
+			int sleep_time = 5 - delta_time.count() / 1000000;
+			if (sleep_time > 0) {
+				Sleep(sleep_time);
+			}
+		/*	exit_time = std::chrono::high_resolution_clock::now();
+			delta_time = exit_time - enter_time;*/
+			//printf("FPS: %.2lf  sleep: %d\n", 1000000000.0 / delta_time.count(), sleep_time);
 		}
+
 	}
 
 
@@ -106,75 +148,6 @@ int main() {
 	return 0;
 }
 
-
-void clear_back_buffer(HDC hdc) {
-
-	if (!backdc) {
-		backdc = CreateCompatibleDC(hdc);
-		if (backbuffer)
-			DeleteObject(backbuffer);
-		backbuffer = CreateCompatibleBitmap(backdc, 4096, 4096);
-		SelectObject(backdc, backbuffer);
-		/*std::cout << "NEW_BUFFER_SIZE  " << width << "  " << height << std::endl;
-		HGDIOBJ obj = SelectObject(backdc, backbuffer);
-		DeleteObject(obj);*/
-	}
-	//else {
-	//	GetObject(backbuffer, sizeof(BITMAP), &bitmap);
-	//	std::cout << "BUFFER_SIZE  " << bitmap.bmWidth << "  " << bitmap.bmWidth << std::endl;
-	//	if (bitmap.bmWidth < width || bitmap.bmHeight < height) {
-	//		//DeleteObject(backbuffer);
-	//		backbuffer = CreateCompatibleBitmap(backdc, width, height);
-	//		std::cout << "NEW_BUFFER_SIZE  " << width << "  " << height << std::endl;
-	//		HGDIOBJ obj = SelectObject(backdc, backbuffer);
-
-	//		std::cout << "HANDLE_CHANGE  " << backbuffer << "  " << obj << std::endl;
-	//		DeleteObject(obj);
-	//		GetObject(backbuffer, sizeof(BITMAP), &bitmap);
-	//		std::cout << "BUFFER_SIZE  " << bitmap.bmWidth << "  " << bitmap.bmWidth << std::endl;
-	//	}
-	//}
-
-	RECT rc;
-	GetClientRect(hWnd, &rc);
-	FillRect(backdc, &rc, (HBRUSH)GetStockObject(WHITE_BRUSH));
-}
-
-
-//void clear_buffer(HDC hdc) {
-//	RECT rc;
-//	GetClientRect(hWnd, &rc);
-//	UINT width = rc.right - rc.left;
-//	UINT height = rc.bottom - rc.top;
-//	BITMAP bitmap;
-//	ZeroMemory(&bitmap, sizeof(BITMAP));
-//	if (!backdc) {
-//		backdc = CreateCompatibleDC(hdc);
-//		/*if (backbuffer)
-//			DeleteObject(backbuffer);*/
-//		backbuffer = CreateCompatibleBitmap(backdc, width, height);
-//		std::cout << "NEW_BUFFER_SIZE  " << width << "  " << height << std::endl;
-//		HGDIOBJ obj = SelectObject(backdc, backbuffer);
-//		DeleteObject(obj);
-//	}
-//	else {
-//		GetObject(backbuffer, sizeof(BITMAP), &bitmap);
-//		std::cout << "BUFFER_SIZE  " << bitmap.bmWidth << "  " << bitmap.bmWidth << std::endl;
-//		if (bitmap.bmWidth < width || bitmap.bmHeight < height) {
-//			//DeleteObject(backbuffer);
-//			backbuffer = CreateCompatibleBitmap(backdc, width, height);
-//			std::cout << "NEW_BUFFER_SIZE  " << width << "  " << height << std::endl;
-//			HGDIOBJ obj = SelectObject(backdc, backbuffer);
-//
-//			std::cout << "HANDLE_CHANGE  " << backbuffer << "  " << obj << std::endl;
-//			DeleteObject(obj);
-//			GetObject(backbuffer, sizeof(BITMAP), &bitmap);
-//			std::cout << "BUFFER_SIZE  " << bitmap.bmWidth << "  " << bitmap.bmWidth << std::endl;
-//		}
-//	}
-//	
-//	FillRect(backdc, &rc, (HBRUSH)GetStockObject(WHITE_BRUSH));
-//}
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -187,31 +160,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	switch (message)
 	{
 	case WM_PAINT:
-		GetClientRect(hWnd, &rc);
-		width = rc.right - rc.left;
-		height = rc.bottom - rc.top;
 		hdc = BeginPaint(hWnd, &ps);
-
-		//clear_back_buffer(hdc);
-
-		if (!backdc) {
-			backdc = CreateCompatibleDC(hdc);
-			if (backbuffer)
-				DeleteObject(backbuffer);
-			backbuffer = CreateCompatibleBitmap(backdc, 4096, 4096);
-			SelectObject(backdc, backbuffer);
-		}
-
-
-		/*	view->Init(backdc);
-			view->DrawBackground(model);
-			view->PaintModel(model);
-			view->DrawForeground(model);*/
-
-
-			//std::cout << "BILTSIZE" << width << "  " << height << std::endl;
-		BitBlt(hdc, 0, 0, width, height, backdc, 0, 0, SRCCOPY);
-
 		EndPaint(hWnd, &ps);
 		break;
 

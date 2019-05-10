@@ -10,7 +10,7 @@ public:
 	~Database();
 
 
-	std::vector<POINT_MESSAGE>GetData();
-
+	void GetData(std::vector<POINT_MESSAGE>& result_buffer);
+	void GetData(std::list<POINT_MESSAGE>& result_list);
 };
 

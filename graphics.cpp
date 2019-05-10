@@ -4,29 +4,29 @@
 
 extern HWND hWnd;
 
-void element::Point::Draw(Gdiplus::Graphics * pGraphics, Gdiplus::Pen * pen)
+void  Point::Draw(Gdiplus::Graphics * pGraphics, Gdiplus::Pen * pen)
 {
-	pGraphics->DrawEllipse(pen, Gdiplus::RectF(this->x, this->y, this->size, this->size));
+	pGraphics->DrawEllipse(pen, Gdiplus::RectF(this->x - this->size / 2, this->y - this->size / 2, this->size, this->size));
 }
 
-element::Point::Point(float x, float y, float size, DWORD id) :
+Point::Point(float x, float y, float size, DWORD id) :
 	x(x), y(y), size(size), id(id)
 {}
 
-element::Point::Point() :
+Point::Point() :
 	x(0), y(0), size(0), id(0)
 {}
 
-void element::Line::Draw(Gdiplus::Graphics * pGraphics, Gdiplus::Pen * pen)
+void  Line::Draw(Gdiplus::Graphics * pGraphics, Gdiplus::Pen * pen)
 {
 	pGraphics->DrawLine(pen, Gdiplus::PointF(this->start.x, this->start.y), Gdiplus::PointF(this->end.x, this->end.y));
 }
 
-element::Line::Line()
+Line::Line()
 {
 }
 
-void element::LineStrip::Draw(Gdiplus::Graphics * pGraphics, Gdiplus::Pen * pen)
+void  LineStrip::Draw(Gdiplus::Graphics * pGraphics, Gdiplus::Pen * pen)
 {
 	static std::vector<Gdiplus::PointF> buffer;
 	buffer.resize(this->points.size());
@@ -44,7 +44,7 @@ void element::LineStrip::Draw(Gdiplus::Graphics * pGraphics, Gdiplus::Pen * pen)
 //	matrix.IsIdentity()
 //}
 
-Gdiplus::Pen * element::IDrawable::GetDefaultPen()
+Gdiplus::Pen *  IDrawable::GetDefaultPen()
 {
 	static Gdiplus::Pen * default_pen = NULL;
 	if (!default_pen) {
@@ -53,7 +53,7 @@ Gdiplus::Pen * element::IDrawable::GetDefaultPen()
 	return default_pen;
 }
 
-void element::IDrawable::Draw(Gdiplus::Graphics * pGraphics)
+void  IDrawable::Draw(Gdiplus::Graphics * pGraphics)
 {
 	auto pen = this->pen;
 	if (!pen) {
@@ -176,23 +176,32 @@ BOOL Controller::OnNetMessage(UINT message, WPARAM wParam, LPARAM lParam)
 
 	if (message == NM_POINT)
 	{
-		POINT_MESSAGE pm = *((POINT_MESSAGE*)lParam);
-		layers[layer_index]->elements.push_back(new element::Point(pm.x, pm.y, pm.size, 0));
+		POINT_MESSAGE* pm = (POINT_MESSAGE*)lParam;
+		layers[layer_index]->elements.push_back(new  Point(pm->x, pm->y, pm->size, 0));
 
-		free(((POINT_MESSAGE*)lParam));
+		delete pm;
 		return TRUE;
 	}
 
+	else if (message == NM_POINT_LIST) {
+		puts("POINT_LIST");
+		std::list<POINT_MESSAGE>* pm = (std::list<POINT_MESSAGE>*)lParam;
+		for (auto i = pm->begin(); i != pm->end(); i++) {
+			layers[layer_index]->elements.push_back(new  Point(i->x, i->y, i->size, 0));
+		}
+		delete pm;
+		return TRUE;
+	}
 
 	else if (message == NM_LINE) {
-		LINE_MESSAGE lm = *((LINE_MESSAGE*)lParam);
-		auto line = new element::Line();
-		line->start = element::Point(lm.p0.x, lm.p0.y, lm.p0.size, 0);
-		line->end = element::Point(lm.p1.x, lm.p1.y, lm.p1.size, 0);
+		LINE_MESSAGE* lm = (LINE_MESSAGE*)lParam;
+		auto line = new  Line();
+		line->start = Point(lm->p0.x, lm->p0.y, lm->p0.size, 0);
+		line->end = Point(lm->p1.x, lm->p1.y, lm->p1.size, 0);
 
 		layers[layer_index]->elements.push_back(line);
 		//layer_stack->layers[layer_index]->line_buffer.push_back(lm);
-		free(((LINE_MESSAGE*)lParam));
+		delete lm;
 		return TRUE;
 	}
 
@@ -237,14 +246,16 @@ BOOL Controller::OnViewTransform(UINT message, WPARAM wParam, LPARAM lParam)
 			model->transform.x = old_transform_x + (cur_mouse_x - drag_enter_x);
 			model->transform.y = old_transform_y + (cur_mouse_y - drag_enter_y);
 			//std::cout << model->transform.x << ", " << model->transform.y << std::endl;
-			InvalidateRect(hWnd, NULL, TRUE);
+			//InvalidateRect(hWnd, NULL, TRUE);
 		}
 
 		return TRUE;
 
 	}
 	else if (WM_CHAR == message) {
-
+		puts("WM_CHAR: ");
+		putc(wParam, stdout);
+		putc('\n', stdout);
 		auto old_scale = model->transform.scale;
 		auto new_scale = 1.0f;
 
@@ -278,9 +289,9 @@ BOOL Controller::OnViewTransform(UINT message, WPARAM wParam, LPARAM lParam)
 
 		model->transform.scale = new_scale;
 
-		if (wParam == '=' || wParam == '-')
+		if (1 || wParam == '=' || wParam == '-')
 		{
-			InvalidateRect(hWnd, NULL, TRUE);
+			//InvalidateRect(hWnd, &rc, TRUE);
 			return TRUE;
 		}
 		return FALSE;

@@ -32,14 +32,23 @@ static int callback(void *NotUsed, int argc, char **argv, char **azColName) {
 	return 0;
 }
 
-static int build_point(void* point_vector, int argc, char** argv, char ** col_name) {
+static int read_point_vector(void* point_vector, int argc, char** argv, char ** col_name) {
 	auto v = (std::vector<POINT_MESSAGE>*)(point_vector);
 	POINT_MESSAGE m;
 	m.x = atof(argv[3]);
 	m.y = atof(argv[4]);
 	v->push_back(m);
+	return 0;
 }
 
+static int read_point_list(void* point_list, int argc, char** argv, char ** col_name) {
+	auto v = (std::list<POINT_MESSAGE>*)(point_list);
+	POINT_MESSAGE m;
+	m.x = atof(argv[3]);
+	m.y = atof(argv[4]);
+	v->push_back(m);
+	return 0;
+}
 
 
 Database::Database(const char * filename)
@@ -69,15 +78,27 @@ Database::~Database()
 {
 }
 
-std::vector<POINT_MESSAGE> Database::GetData()
+void Database::GetData(std::vector<POINT_MESSAGE>& result_vector)
 {
 	int rc = sqlite3_open(this->dbname.c_str(), &this->sqlite);
 	char* err;
-	rc = sqlite3_exec(this->sqlite, read_file("./sql/readall.sql").c_str(), callback, 0, &err);
+	rc = sqlite3_exec(this->sqlite, read_file("./sql/readall.sql").c_str(), read_point_vector, &result_vector, &err);
 	if (rc != SQLITE_OK) {
 		fprintf(stderr, "SQL error: %s\n", err);
 		sqlite3_free(err);
 	}
 	sqlite3_close(this->sqlite);
-	return std::vector<POINT_MESSAGE>();
+}
+
+
+void Database::GetData(std::list<POINT_MESSAGE>& result_list)
+{
+	int rc = sqlite3_open(this->dbname.c_str(), &this->sqlite);
+	char* err;
+	rc = sqlite3_exec(this->sqlite, read_file("./sql/readall.sql").c_str(), read_point_list, &result_list, &err);
+	if (rc != SQLITE_OK) {
+		fprintf(stderr, "SQL error: %s\n", err);
+		sqlite3_free(err);
+	}
+	sqlite3_close(this->sqlite);
 }
