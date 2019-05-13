@@ -15,8 +15,8 @@ public:
 };
 
 class NetPoint : public INetDrawable {
-	virtual void Draw(Gdiplus::Graphics* pGraphics, Gdiplus::Pen* pen) override;
 public:
+	virtual void Draw(Gdiplus::Graphics* pGraphics, Gdiplus::Pen* pen) override;
 	float x;
 	float y;
 	float size;
@@ -24,6 +24,7 @@ public:
 	NetPoint(float x, float y, float size, DWORD id);
 	NetPoint();
 };
+
 
 class NetLine : public INetDrawable {
 	virtual void Draw(Gdiplus::Graphics* pGraphics, Gdiplus::Pen* pen) override;
@@ -52,9 +53,6 @@ public:
 	ELEMENT_TRANSFORM transform;
 	std::vector<INetDrawable*> elements;
 
-	//void GetMatrix(Gdiplus::Matrix& matrix);
-
-
 };
 
 
@@ -69,7 +67,6 @@ public:
 };
 
 class Controller {
-	//std::vector<Layer*> layers;
 
 	Model* model;
 
@@ -122,27 +119,3 @@ class AxisView : public View {
 	virtual void DrawBackground(Model * model) override;
 };
 
-
-
-
-//
-//struct TRANSFORM {
-//	float zoom = 1;
-//	float rotate = 0;
-//	float cx = 400;
-//	float cy = 300;
-//};
-//
-//
-//#include<math.h>
-//void GetTransformed(TRANSFORM& transform, float x, float y, float* out_x, float* out_y) {
-//	float theta = transform.rotate;
-//	float rx = cos(theta)*x - sin(theta)*y;
-//	float ry = sin(theta)*x + cos(theta)*y;
-//
-//	rx *= transform.zoom;
-//	ry *= transform.zoom;
-//
-//	*out_x = transform.cx + x;
-//	*out_y = transform.cy - y;
-//}

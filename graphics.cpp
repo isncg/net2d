@@ -1,5 +1,6 @@
 #include "graphics.h"
 #include "message.h"
+#include<memory>
 #pragma comment (lib,"Gdiplus.lib")
 
 extern HWND hWnd;
@@ -39,10 +40,6 @@ void  NetLineStrip::Draw(Gdiplus::Graphics * pGraphics, Gdiplus::Pen * pen)
 	pGraphics->DrawLines(pen, &buffer[0], buffer.size());
 }
 
-//void Layer::GetMatrix(Gdiplus::Matrix & matrix)
-//{
-//	matrix.IsIdentity()
-//}
 
 Gdiplus::Pen *  INetDrawable::GetDefaultPen()
 {
@@ -227,6 +224,12 @@ Controller::Controller(Model * model) :
 {
 }
 
+
+template <class T>
+auto lparam_ptr(LPARAM lParam) {
+	return std::auto_ptr<T>((T*)lParam);
+}
+
 BOOL Controller::OnNetMessage(UINT message, WPARAM wParam, LPARAM lParam)
 {
 	int layer_index = wParam;
@@ -238,31 +241,26 @@ BOOL Controller::OnNetMessage(UINT message, WPARAM wParam, LPARAM lParam)
 
 	if (message == NM_POINT)
 	{
-		POINT_MESSAGE* pm = (POINT_MESSAGE*)lParam;
+		auto pm = lparam_ptr<POINT_MESSAGE>(lParam);
 		layers[layer_index]->elements.push_back(new  NetPoint(pm->x, pm->y, pm->size, 0));
-
-		delete pm;
 		return TRUE;
 	}
 
 	else if (message == NM_POINT_LIST) {
-		std::list<POINT_MESSAGE>* pm = (std::list<POINT_MESSAGE>*)lParam;
+		auto pm = lparam_ptr<std::list<POINT_MESSAGE>>(lParam);
 		for (auto i = pm->begin(); i != pm->end(); i++) {
 			layers[layer_index]->elements.push_back(new  NetPoint(i->x, i->y, i->size, 0));
 		}
-		delete pm;
 		return TRUE;
 	}
 
 	else if (message == NM_LINE) {
-		LINE_MESSAGE* lm = (LINE_MESSAGE*)lParam;
+		auto lm = lparam_ptr<LINE_MESSAGE>(lParam);
 		auto line = new  NetLine();
 		line->start = NetPoint(lm->p0.x, lm->p0.y, lm->p0.size, 0);
 		line->end = NetPoint(lm->p1.x, lm->p1.y, lm->p1.size, 0);
 
 		layers[layer_index]->elements.push_back(line);
-		//layer_stack->layers[layer_index]->line_buffer.push_back(lm);
-		delete lm;
 		return TRUE;
 	}
 
@@ -274,7 +272,6 @@ BOOL Controller::OnNetMessage(UINT message, WPARAM wParam, LPARAM lParam)
 }
 
 
-//#include <iostream>
 BOOL Controller::OnViewTransform(UINT message, WPARAM wParam, LPARAM lParam)
 {
 	if (WM_LBUTTONDOWN == message) {
@@ -289,12 +286,7 @@ BOOL Controller::OnViewTransform(UINT message, WPARAM wParam, LPARAM lParam)
 	}
 	else if (WM_LBUTTONUP == message) {
 		isDrag = false;
-
 		return TRUE;
-
-
-
-
 	}
 	else if (WM_MOUSEMOVE == message) {
 
@@ -304,8 +296,6 @@ BOOL Controller::OnViewTransform(UINT message, WPARAM wParam, LPARAM lParam)
 		if (isDrag) {
 			model->transform.x = old_transform_x + (cur_mouse_x - drag_enter_x);
 			model->transform.y = old_transform_y + (cur_mouse_y - drag_enter_y);
-			//std::cout << model->transform.x << ", " << model->transform.y << std::endl;
-			//InvalidateRect(hWnd, NULL, TRUE);
 		}
 
 		return TRUE;
@@ -338,8 +328,6 @@ BOOL Controller::OnViewTransform(UINT message, WPARAM wParam, LPARAM lParam)
 		float zoom_rate = new_scale / old_scale;
 		float shift_x = (zoom_rate - 1) * cx;
 		float shift_y = (zoom_rate - 1) * cy;
-		/*std::cout << "C    _XY " << cx << " " << cy << std::endl;
-		std::cout << "SHIFT_XY " << shift_x << " " << shift_y << std::endl;*/
 		model->transform.x += shift_x;
 		model->transform.y += shift_y;
 
@@ -347,7 +335,6 @@ BOOL Controller::OnViewTransform(UINT message, WPARAM wParam, LPARAM lParam)
 
 		if (1 || wParam == '=' || wParam == '-')
 		{
-			//InvalidateRect(hWnd, &rc, TRUE);
 			return TRUE;
 		}
 		return FALSE;

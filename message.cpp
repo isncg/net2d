@@ -7,9 +7,7 @@ UINT _NM_CLEAR = 0;
 UINT _NM_POINT = 0;
 UINT _NM_LINE = 0;
 UINT _NM_POINT_LIST = 0;
-//void PostNetMessage(HWND hWnd, UINT layer, UINT type, void* msgdata) {
-//	PostMessage(hWnd, type, layer, (LPARAM)msgdata);
-//}
+
 
 UINT GET_NM_CLEAR()
 {
