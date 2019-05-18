@@ -256,6 +256,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	RECT rc;
 	UINT width;
 	UINT height;
+
+	MINMAXINFO* pMMI = NULL;
 	switch (message)
 	{
 	case WM_PAINT:
@@ -270,6 +272,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_SIZE:
 		ResizeRenderingArea();
 		//InvalidateRect(::hWnd, NULL, FALSE);
+		break;
+
+	case WM_GETMINMAXINFO:
+		pMMI = (MINMAXINFO*)lParam;
+		pMMI->ptMinTrackSize.x = 400;
+		pMMI->ptMinTrackSize.y = 300;
 		break;
 
 	default:
@@ -301,7 +309,7 @@ ATOM RegisterWindowClasses(HINSTANCE hInstance)
 	wcex.cbWndExtra = 0;
 	wcex.hInstance = hInstance;
 	wcex.hIcon = 0;
-	wcex.hCursor = 0;
+	wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wcex.hbrBackground = (HBRUSH)GetStockObject(GRAY_BRUSH);
 	wcex.lpszMenuName = NULL;
 	wcex.lpszClassName = main_window_class_name;
@@ -318,7 +326,7 @@ ATOM RegisterWindowClasses(HINSTANCE hInstance)
 	wcex.cbWndExtra = 0;
 	wcex.hInstance = hInstance;
 	wcex.hIcon = 0;
-	wcex.hCursor = 0;
+	wcex.hCursor = LoadCursor(NULL, IDC_HAND);
 	wcex.hbrBackground = 0;
 	wcex.lpszMenuName = NULL;
 	wcex.lpszClassName = render_window_class_name;

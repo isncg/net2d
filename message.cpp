@@ -32,26 +32,26 @@ UINT GET_NM_LINE()
 HRESULT  SendNetPointMessage(HWND hWnd, UINT layer, POINT_MESSAGE & msgdata) {
 	auto m = new POINT_MESSAGE;
 	*m = msgdata;
-	return SendMessage(hWnd, _NM_POINT, layer, (LPARAM)m);
+	return PostMessage(hWnd, _NM_POINT, layer, (LPARAM)m);
 
 }
 
 HRESULT SendNetLineMessage(HWND hWnd, UINT layer, LINE_MESSAGE & msgdata) {
 	auto m = new LINE_MESSAGE;
 	*m = msgdata;
-	return SendMessage(hWnd, _NM_LINE, layer, (LPARAM)m);
+	return PostMessage(hWnd, _NM_LINE, layer, (LPARAM)m);
 }
 
 HRESULT SendNetPointListMessage(HWND hWnd, UINT layer, std::list<POINT_MESSAGE>& point_list)
 {
 	auto m = new std::list<POINT_MESSAGE>;
 	m->assign(point_list.begin(), point_list.end());
-	return SendMessage(hWnd, _NM_POINT_LIST, layer, (LPARAM)m);
+	return PostMessage(hWnd, _NM_POINT_LIST, layer, (LPARAM)m);
 }
 
 HRESULT SendNetClearMessage(HWND hWnd, UINT layer)
 {
-	return SendMessage(hWnd, _NM_CLEAR, layer, 0);
+	return PostMessage(hWnd, _NM_CLEAR, layer, 0);
 }
 
 //void CreatePaintLayer(int count, PAINT_LAYER_STACK ** result)

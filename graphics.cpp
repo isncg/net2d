@@ -288,6 +288,12 @@ BOOL Controller::OnViewTransform(UINT message, WPARAM wParam, LPARAM lParam)
 		isDrag = false;
 		return TRUE;
 	}
+
+	else if (WM_MOUSELEAVE == message) {
+		isDrag = false;
+		return TRUE;
+	}
+
 	else if (WM_MOUSEMOVE == message) {
 
 		cur_mouse_x = LOWORD(lParam);
@@ -298,6 +304,12 @@ BOOL Controller::OnViewTransform(UINT message, WPARAM wParam, LPARAM lParam)
 			model->transform.y = old_transform_y + (cur_mouse_y - drag_enter_y);
 		}
 
+		TRACKMOUSEEVENT tme;
+		tme.cbSize = sizeof(tme);
+		tme.dwFlags = TME_LEAVE;
+		tme.hwndTrack = hWnd;
+		tme.dwHoverTime = HOVER_DEFAULT;
+		TrackMouseEvent(&tme);
 		return TRUE;
 
 	}
