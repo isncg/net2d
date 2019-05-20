@@ -3,7 +3,7 @@
 #include<memory>
 #pragma comment (lib,"Gdiplus.lib")
 
-extern HWND hWnd;
+//extern HWND hWnd;
 
 void  NetPoint::Draw(Gdiplus::Graphics * pGraphics, Gdiplus::Pen * pen)
 {
@@ -97,10 +97,12 @@ View::View()
 	this->pGraphics = NULL;
 }
 
+#include "ui.h"
+
 void View::ResetTransform(ELEMENT_TRANSFORM * transform)
 {
 	RECT rc;
-	GetClientRect(hWnd, &rc);
+	GetClientRect(UI::GraphicsArea, &rc);
 	pGraphics->ResetTransform();
 	pGraphics->TranslateTransform((rc.right - rc.left) / 2.0, (rc.bottom - rc.top) / 2.0);
 	pGraphics->TranslateTransform(transform->x, transform->y);
@@ -157,7 +159,7 @@ void AxisView::DrawBackground(Model * model)
 	Gdiplus::Pen pen(Gdiplus::Color(128, 128, 128));
 	Gdiplus::SolidBrush brush(Gdiplus::Color(0, 0, 0));
 	RECT rc;
-	GetClientRect(hWnd, &rc);
+	GetClientRect(UI::GraphicsArea, &rc);
 	pGraphics->ResetTransform();
 	float cx = model->transform.x + rc.right / 2.0f;
 	float cy = model->transform.y + rc.bottom / 2.0f;
@@ -307,7 +309,7 @@ BOOL Controller::OnViewTransform(UINT message, WPARAM wParam, LPARAM lParam)
 		TRACKMOUSEEVENT tme;
 		tme.cbSize = sizeof(tme);
 		tme.dwFlags = TME_LEAVE;
-		tme.hwndTrack = hWnd;
+		tme.hwndTrack = UI::GraphicsArea;
 		tme.dwHoverTime = HOVER_DEFAULT;
 		TrackMouseEvent(&tme);
 		return TRUE;
@@ -334,7 +336,7 @@ BOOL Controller::OnViewTransform(UINT message, WPARAM wParam, LPARAM lParam)
 
 
 		RECT rc;
-		GetClientRect(hWnd, &rc);
+		GetClientRect(UI::GraphicsArea, &rc);
 		float cx = model->transform.x;
 		float cy = model->transform.y;
 		float zoom_rate = new_scale / old_scale;

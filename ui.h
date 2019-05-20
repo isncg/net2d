@@ -8,4 +8,4 @@ namespace UI {
 	extern HWND StatusBar;
 };
 
-BOOL CreateUI();
+BOOL CreateUI(HINSTANCE hInstance);

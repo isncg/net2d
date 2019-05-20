@@ -1,9 +1,9 @@
 #include "net.h"
 #include "message.h"
-
+#include "ui.h"
 #pragma comment(lib, "Ws2_32.lib")
-
-extern HWND hWnd;
+//
+//extern HWND hWnd;
 
 
 
@@ -62,7 +62,7 @@ DWORD WINAPI RunUDP(LPVOID params) {
 		pm.x = data.x;
 		pm.y = data.y;
 		pm.size = 5;
-		SendNetPointMessage(hWnd, 0, pm);
+		SendNetPointMessage(UI::GraphicsArea, 0, pm);
 
 	}
 	return 0;
@@ -136,7 +136,7 @@ DWORD WINAPI RunRadar(LPVOID params) {
 		}
 
 		if (points.size() > 0) {
-			SendNetPointListMessage(hWnd, 0, points);
+			SendNetPointListMessage(UI::GraphicsArea, 0, points);
 		}
 
 		/*TESTINTERFACE data = *((TESTINTERFACE*)&buffer[0]);
