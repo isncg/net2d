@@ -6,8 +6,8 @@
 #include<chrono>
 #include<iostream>
 
-LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
-LRESULT CALLBACK RenderProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK    MainWindowProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK GraphicsProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 void ResizeRenderingArea();
 
 
